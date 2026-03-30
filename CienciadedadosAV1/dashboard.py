@@ -89,7 +89,7 @@ if "FAIXA_TEXTO" in df_filtrado.columns:
 # =========================
 # TÍTULO
 # =========================
-st.title("📊 Dashboard ReclameAqui - Ibyte")
+st.title(" Dashboard ReclameAqui - Ibyte")
 st.markdown("Análise exploratória das reclamações da Ibyte com foco em status, localização, categorias e comportamento temporal.")
 
 # =========================
@@ -239,7 +239,7 @@ with col4:
 # MAPA DO BRASIL (CORRIGIDO)
 # =========================
 
-st.subheader("🗺️ Mapa do Brasil por Estado")
+st.subheader(" Mapa do Brasil por Estado")
 
 if "ESTADO" in df_filtrado.columns and not df_filtrado.empty:
 
@@ -268,7 +268,7 @@ if "ESTADO" in df_filtrado.columns and not df_filtrado.empty:
 # =========================
 # SÉRIE TEMPORAL
 # =========================
-st.subheader("📈 Evolução Temporal")
+st.subheader(" Evolução Temporal")
 
 if "DATA" in df_filtrado.columns and not df_filtrado.empty:
     serie = (
@@ -325,11 +325,49 @@ with col6:
             yaxis_title="Frequência"
         )
         st.plotly_chart(fig_hist, width="stretch")
+        
+# =========================
+# CRUZAMENTO DE DADOS
+# =========================
+
+st.subheader("Cruzamento de Dados")
+
+col7, col8 = st.columns(2)
+
+# STATUS x CATEGORIA
+with col7:
+    cruz = pd.crosstab(
+        df_filtrado["CATEGORIA_PRINCIPAL"],
+        df_filtrado["STATUS"]
+    ).head(10)
+
+    fig = px.imshow(
+        cruz,
+        text_auto=True,
+        title="Categoria x Status"
+    )
+
+    st.plotly_chart(fig, width="stretch")
+
+# STATUS x ESTADO
+with col8:
+    cruz2 = pd.crosstab(
+        df_filtrado["ESTADO"],
+        df_filtrado["STATUS"]
+    ).head(10)
+
+    fig2 = px.imshow(
+        cruz2,
+        text_auto=True,
+        title="Estado x Status"
+    )
+
+    st.plotly_chart(fig2, width="stretch")
 
 # =========================
 # TABELA FINAL
 # =========================
-st.subheader("📋 Amostra dos Dados Filtrados")
+st.subheader(" Amostra dos Dados Filtrados")
 
 colunas_mostrar = [
     col for col in [
