@@ -119,13 +119,45 @@ for col in colunas_numericas:
 
 # Separa cidade e estado
 if "LOCAL" in df.columns:
-    local_split = df["LOCAL"].str.split(" - ", n=1, expand=True)
+    local_split = df["LOCAL"].astype(str).str.strip().str.upper().str.replace("\u00A0", " ", regex=False).str.split(" - ", n=1, expand=True)
     if local_split.shape[1] == 2:
         df["CIDADE"] = local_split[0].str.strip()
         df["ESTADO"] = local_split[1].str.strip()
     else:
-        df["CIDADE"] = df["LOCAL"]
+        df["CIDADE"] = df["LOCAL"].astype(str).str.strip().str.upper()
         df["ESTADO"] = np.nan
+
+# Normaliza e filtra estados inválidos
+ufs_validos = {
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
+    'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
+    'SP', 'SE', 'TO'
+}
+
+if "ESTADO" in df.columns:
+    df["ESTADO"] = df["ESTADO"].astype(str).str.strip().str.upper().replace({
+        'C': np.nan,
+        'P': np.nan,
+        '--': np.nan,
+        'NAOCONSTA': np.nan,
+        'N/C': np.nan,
+        'N/A': np.nan,
+        '': np.nan,
+        'NONE': np.nan
+    })
+    df.loc[~df["ESTADO"].isin(ufs_validos), "ESTADO"] = np.nan
+
+if "CIDADE" in df.columns:
+    df["CIDADE"] = df["CIDADE"].astype(str).str.strip().replace({
+        'C': np.nan,
+        'P': np.nan,
+        '--': np.nan,
+        'NAOCONSTA': np.nan,
+        'N/C': np.nan,
+        'N/A': np.nan,
+        '': np.nan,
+        'NONE': np.nan
+    })
 
 # Categoria principal = primeiro nível antes do <->
 if "CATEGORIA" in df.columns:
@@ -289,7 +321,10 @@ if "DATA" in df.columns:
 # 10.9 Faixa de tamanho do texto
 if "FAIXA_TEXTO" in df.columns:
     plt.figure(figsize=(10, 5))
-    df["FAIXA_TEXTO"].value_counts().sort_index().plot(kind="bar")
+    faixa_counts = df["FAIXA_TEXTO"].value_counts().sort_index()
+    cmap = plt.get_cmap("viridis")
+    colors = [cmap(i / max(len(faixa_counts) - 1, 1)) for i in range(len(faixa_counts))]
+    faixa_counts.plot(kind="bar", color=colors)
     plt.title("Distribuição por Faixa de Tamanho do Texto")
     plt.xlabel("Faixa")
     plt.ylabel("Quantidade")
